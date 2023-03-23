@@ -1,4 +1,26 @@
-import * as THREE from 'three';
+import {
+  Raycaster,
+  Clock,
+  Scene,
+  EquirectangularReflectionMapping,
+  sRGBEncoding,
+  ACESFilmicToneMapping,
+  PerspectiveCamera,
+  AnimationMixer,
+  AnimationClip,
+  HemisphereLight,
+  DirectionalLight,
+  Vector2,
+  PlaneGeometry,
+  MeshPhongMaterial,
+  Mesh,
+  MeshBasicMaterial,
+  LoopOnce,
+  MathUtils,
+  WebGLRenderer,
+  Color,
+  Fog,
+} from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader';
 
@@ -13,41 +35,43 @@ let scene,
   possibleAnims, // Animations found in our file
   mixer, // THREE.js animations mixer
   idle, // Idle, the default state our character returns to
-  clock = new THREE.Clock(), // Used for anims, which run to a clock instead of frame rate
+  clock = new Clock(), // Used for anims, which run to a clock instead of frame rate
   currentlyAnimating = false, // Used to check whether characters neck is being used in another anim
-  raycaster = new THREE.Raycaster(), // Used to detect the click on our character
+  raycaster = new Raycaster(), // Used to detect the click on our character
   loaderAnim = document.getElementById('js-loader');
+
+const params = {
+  color: '#212121',
+};
 
 init();
 function init() {
-  const MODEL_PATH = './public/frank2.glb';
+  const MODEL_PATH = 'frank2.glb';
   const canvas = document.querySelector('#c');
-  const backgroundColor = 0x999999;
 
   // Init the scene
-  scene = new THREE.Scene();
-  // scene.background = texture;
-  // scene.fog = new THREE.Fog(backgroundColor, 60, 100);
+  scene = new Scene();
+  scene.background = new Color(params.color);
+  scene.fog = new Fog(params.color, 60, 100);
 
   new RGBELoader()
     .setPath('')
-    .load('./public/neutral.hdr', function (texture) {
-      texture.mapping = THREE.EquirectangularReflectionMapping;
-      // scene.background = texture;
+    .load('neutral.hdr', function (texture) {
+      texture.mapping = EquirectangularReflectionMapping;
       scene.environment = texture;
     });
 
   // Init the renderer
-  renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer = new WebGLRenderer({ canvas, antialias: true });
   renderer.shadowMap.enabled = true;
   renderer.setPixelRatio(window.devicePixelRatio);
-  renderer.outputEncoding = THREE.sRGBEncoding;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 0.7;
+  renderer.outputEncoding = sRGBEncoding;
+  renderer.toneMapping = ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1;
   document.body.appendChild(renderer.domElement);
 
   // Add a camera
-  camera = new THREE.PerspectiveCamera(
+  camera = new PerspectiveCamera(
     50,
     window.innerWidth / window.innerHeight,
     0.1,
@@ -87,11 +111,11 @@ function init() {
 
       loaderAnim.remove();
 
-      mixer = new THREE.AnimationMixer(model);
+      mixer = new AnimationMixer(model);
 
       let clips = fileAnimations.filter((val) => val.name !== 'idle');
       possibleAnims = clips.map((val) => {
-        let clip = THREE.AnimationClip.findByName(clips, val.name);
+        let clip = AnimationClip.findByName(clips, val.name);
 
         clip.tracks.splice(3, 3);
         clip.tracks.splice(9, 3);
@@ -100,10 +124,7 @@ function init() {
         return clip;
       });
 
-      let idleAnim = THREE.AnimationClip.findByName(
-        fileAnimations,
-        'idle'
-      );
+      let idleAnim = AnimationClip.findByName(fileAnimations, 'idle');
 
       idleAnim.tracks.splice(3, 3);
       idleAnim.tracks.splice(9, 3);
@@ -118,16 +139,16 @@ function init() {
   );
 
   // Add lights
-  let hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 1.5);
+  let hemiLight = new HemisphereLight(0xffffff, 0xffffff, 0.2);
   hemiLight.position.set(0, 0, 0);
   // Add hemisphere light to scene
   scene.add(hemiLight);
 
   let d = 10.25;
-  let dirLight = new THREE.DirectionalLight(0xffffff, 1.7);
+  let dirLight = new DirectionalLight(0xffffff, 0.2);
   dirLight.position.set(-8, 12, 8);
   dirLight.castShadow = true;
-  dirLight.shadow.mapSize = new THREE.Vector2(1024, 1024);
+  dirLight.shadow.mapSize = new Vector2(1024, 1024);
   dirLight.shadow.camera.near = 0.1;
   dirLight.shadow.camera.far = 1500;
   dirLight.shadow.camera.left = d * -1;
@@ -138,34 +159,34 @@ function init() {
   scene.add(dirLight);
 
   // Floor
-  let floorGeometry = new THREE.PlaneGeometry(5000, 5000, 1, 1);
-  let floorMaterial = new THREE.MeshPhongMaterial({
+  let floorGeometry = new PlaneGeometry(5000, 5000, 1, 1);
+  let floorMaterial = new MeshPhongMaterial({
     color: 0x555555,
     shininess: 1,
   });
 
-  let floor = new THREE.Mesh(floorGeometry, floorMaterial);
+  let floor = new Mesh(floorGeometry, floorMaterial);
   floor.rotation.x = -0.5 * Math.PI;
   floor.receiveShadow = true;
   floor.position.y = -11;
   scene.add(floor);
 
-  let geometry = new THREE.PlaneGeometry(6, 15, 1, 1);
-  let material = new THREE.MeshBasicMaterial({
+  let geometry = new PlaneGeometry(4, 15, 1, 1);
+  let material = new MeshBasicMaterial({
     color: 0x9badff,
     opacity: 0,
     transparent: true,
   }); // 0xf2ce2e
-  let sphere = new THREE.Mesh(geometry, material);
+  let clickmesh = new Mesh(geometry, material);
 
-  sphere.position.z = 2;
-  sphere.position.y = -5.5;
-  sphere.position.x = 0;
-  sphere.name = 'yo';
-  scene.add(sphere);
+  clickmesh.position.z = 2;
+  clickmesh.position.y = -5.5;
+  clickmesh.position.x = 0;
+  clickmesh.name = 'yo';
+  scene.add(clickmesh);
 }
 
-function update() {
+function render() {
   if (mixer) {
     mixer.update(clock.getDelta());
   }
@@ -177,10 +198,10 @@ function update() {
   }
 
   renderer.render(scene, camera);
-  requestAnimationFrame(update);
+  requestAnimationFrame(render);
 }
 
-update();
+render();
 
 function resizeRendererToDisplaySize(renderer) {
   const canvas = renderer.domElement;
@@ -235,7 +256,7 @@ function playOnClick() {
 }
 
 function playModifierAnimation(from, fSpeed, to, tSpeed) {
-  to.setLoop(THREE.LoopOnce);
+  to.setLoop(LoopOnce);
   to.reset();
   to.play();
   from.crossFadeTo(to, fSpeed, true);
@@ -260,8 +281,8 @@ function getMousePos(e) {
 
 function moveJoint(mouse, joint, degreeLimit) {
   let degrees = getMouseDegrees(mouse.x, mouse.y, degreeLimit);
-  joint.rotation.y = THREE.MathUtils.degToRad(degrees.x);
-  joint.rotation.x = THREE.MathUtils.degToRad(degrees.y);
+  joint.rotation.y = MathUtils.degToRad(degrees.x);
+  joint.rotation.x = MathUtils.degToRad(degrees.y);
 }
 
 function getMouseDegrees(x, y, degreeLimit) {
