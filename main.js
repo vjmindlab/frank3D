@@ -176,7 +176,7 @@ function init() {
   floor.position.y = -11;
   scene.add(floor);
 
-  let geometry = new PlaneGeometry(4, 15, 1, 1);
+  let geometry = new PlaneGeometry(4, 13.6, 1, 1);
   let material = new MeshBasicMaterial({
     color: 0x516f2a,
     opacity: 0,
