@@ -16,7 +16,20 @@
       html {
         margin: 0;
         padding: 0;
-        background: #25252b;
+        background-image: url('city.webp'),
+          linear-gradient(
+            to bottom,
+            #051937,
+            #393f58,
+            #68697c,
+            #9897a2,
+            #c9c9c9
+          );
+        background-color: #cccccc;
+        height: 500px;
+        background-position: center bottom;
+        background-repeat: no-repeat;
+        background-size: cover;
       }
       * {
         touch-action: manipulation;
@@ -33,7 +46,7 @@
         font-size: 11px;
         font-family: 'Poppins', sans-serif;
         width: 100%;
-        height: 100vh;
+        height: 100dvh;
       }
       .wrapper {
         display: flex;
@@ -56,10 +69,11 @@
         height: 100%;
         top: 0;
         left: 0;
-        background: #f1f1f1;
+        background: #333333;
         display: flex;
         justify-content: center;
         align-items: center;
+        transition: all 1s;
       }
 
       .loader {
@@ -69,10 +83,6 @@
         perspective: 120px;
         width: 100px;
         height: 100px;
-      }
-
-      button {
-        z-index: 1;
       }
 
       .loader:before {

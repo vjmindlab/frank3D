@@ -12,13 +12,12 @@ import {
   DirectionalLight,
   Vector2,
   PlaneGeometry,
-  MeshPhongMaterial,
   Mesh,
   MeshBasicMaterial,
   LoopOnce,
   MathUtils,
   WebGLRenderer,
-  Color,
+  ShadowMaterial,
   Fog,
 } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
@@ -40,9 +39,9 @@ let scene,
   raycaster = new Raycaster(), // Used to detect the click on our character
   loaderAnim = document.getElementById('js-loader');
 
-const params = {
-  color: '#212121',
-};
+// const params = {
+//   color: '#212121',
+// };
 
 init();
 function init() {
@@ -51,8 +50,8 @@ function init() {
 
   // Init the scene
   scene = new Scene();
-  scene.background = new Color(params.color);
-  scene.fog = new Fog(params.color, 60, 100);
+  // scene.background = new Color(params.color);
+  // scene.fog = new Fog(params.color, 60, 100);
 
   new RGBELoader()
     .setPath('')
@@ -62,12 +61,17 @@ function init() {
     });
 
   // Init the renderer
-  renderer = new WebGLRenderer({ canvas, antialias: true });
+  renderer = new WebGLRenderer({
+    canvas,
+    antialias: true,
+    alpha: true,
+  });
   renderer.shadowMap.enabled = true;
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.outputEncoding = sRGBEncoding;
   renderer.toneMapping = ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1;
+  renderer.setClearColor(0x000000, 0);
   document.body.appendChild(renderer.domElement);
 
   // Add a camera
@@ -96,10 +100,10 @@ function init() {
           o.envMap = texture;
         }
         // Reference the neck and waist bones
-        if (o.isBone && o.name === 'mixamorigNeck') {
+        if (o.isBone && o.name === 'Neck') {
           neck = o;
         }
-        if (o.isBone && o.name === 'mixamorigSpine') {
+        if (o.isBone && o.name === 'Spine') {
           waist = o;
         }
       });
@@ -160,9 +164,10 @@ function init() {
 
   // Floor
   let floorGeometry = new PlaneGeometry(5000, 5000, 1, 1);
-  let floorMaterial = new MeshPhongMaterial({
-    color: 0x555555,
-    shininess: 1,
+  let floorMaterial = new ShadowMaterial({
+    // color: 0x516f2a,
+    // shininess: 1,
+    opacity: 0.5,
   });
 
   let floor = new Mesh(floorGeometry, floorMaterial);
@@ -173,7 +178,7 @@ function init() {
 
   let geometry = new PlaneGeometry(4, 15, 1, 1);
   let material = new MeshBasicMaterial({
-    color: 0x9badff,
+    color: 0x516f2a,
     opacity: 0,
     transparent: true,
   }); // 0xf2ce2e
@@ -323,7 +328,7 @@ function getMouseDegrees(x, y, degreeLimit) {
   if (y >= w.y / 2) {
     ydiff = y - w.y / 2;
     yPercentage = (ydiff / (w.y / 2)) * 100;
-    dy = ((degreeLimit / 2.5) * yPercentage) / 100;
+    dy = ((degreeLimit / 5.5) * yPercentage) / 100;
   }
   return { x: dx, y: dy };
 }
