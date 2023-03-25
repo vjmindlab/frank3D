@@ -18,10 +18,10 @@ import {
   MathUtils,
   WebGLRenderer,
   ShadowMaterial,
-  Fog,
 } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 
 // Set our main variables
 let scene,
@@ -39,19 +39,13 @@ let scene,
   raycaster = new Raycaster(), // Used to detect the click on our character
   loaderAnim = document.getElementById('js-loader');
 
-// const params = {
-//   color: '#212121',
-// };
-
 init();
 function init() {
-  const MODEL_PATH = 'frank2.glb';
+  const MODEL_PATH = 'frank2-v1.glb';
   const canvas = document.querySelector('#c');
 
   // Init the scene
   scene = new Scene();
-  // scene.background = new Color(params.color);
-  // scene.fog = new Fog(params.color, 60, 100);
 
   new RGBELoader()
     .setPath('')
@@ -79,75 +73,69 @@ function init() {
     50,
     window.innerWidth / window.innerHeight,
     0.1,
-    1000
+    50
   );
   camera.position.z = 20;
   camera.position.x = 0;
   camera.position.y = -3.5;
 
   var loader = new GLTFLoader();
+  loader.setMeshoptDecoder(MeshoptDecoder);
+  loader.load(MODEL_PATH, function (gltf) {
+    model = gltf.scene;
+    let fileAnimations = gltf.animations;
 
-  loader.load(
-    MODEL_PATH,
-    function (gltf) {
-      model = gltf.scene;
-      let fileAnimations = gltf.animations;
+    model.traverse((o) => {
+      if (o.isMesh) {
+        o.frustumCulled = false; // Fix the disapearing mesh due to Meshopt compression
+        o.castShadow = true;
+        o.receiveShadow = true;
+        o.envMap = texture;
+      }
+      // Reference the neck and waist bones
+      if (o.isBone && o.name === 'Neck') {
+        neck = o;
+      }
+      if (o.isBone && o.name === 'Spine') {
+        waist = o;
+      }
+    });
 
-      model.traverse((o) => {
-        if (o.isMesh) {
-          o.castShadow = true;
-          o.receiveShadow = true;
-          o.envMap = texture;
-        }
-        // Reference the neck and waist bones
-        if (o.isBone && o.name === 'Neck') {
-          neck = o;
-        }
-        if (o.isBone && o.name === 'Spine') {
-          waist = o;
-        }
-      });
+    model.scale.set(7, 7, 7);
+    model.position.y = -11;
 
-      model.scale.set(7, 7, 7);
-      model.position.y = -11;
+    scene.add(model);
 
-      scene.add(model);
+    loaderAnim.remove();
 
-      loaderAnim.remove();
+    mixer = new AnimationMixer(model);
 
-      mixer = new AnimationMixer(model);
+    let clips = fileAnimations.filter((val) => val.name !== 'idle');
+    possibleAnims = clips.map((val) => {
+      let clip = AnimationClip.findByName(clips, val.name);
 
-      let clips = fileAnimations.filter((val) => val.name !== 'idle');
-      possibleAnims = clips.map((val) => {
-        let clip = AnimationClip.findByName(clips, val.name);
+      clip.tracks.splice(3, 3);
+      clip.tracks.splice(9, 3);
 
-        clip.tracks.splice(3, 3);
-        clip.tracks.splice(9, 3);
+      clip = mixer.clipAction(clip);
+      return clip;
+    });
 
-        clip = mixer.clipAction(clip);
-        return clip;
-      });
+    let idleAnim = AnimationClip.findByName(fileAnimations, 'idle');
 
-      let idleAnim = AnimationClip.findByName(fileAnimations, 'idle');
+    idleAnim.tracks.splice(3, 3);
+    idleAnim.tracks.splice(9, 3);
 
-      idleAnim.tracks.splice(3, 3);
-      idleAnim.tracks.splice(9, 3);
+    idle = mixer.clipAction(idleAnim);
+    idle.play();
+  });
 
-      idle = mixer.clipAction(idleAnim);
-      idle.play();
-    },
-    undefined, // We don't need this function
-    function (error) {
-      console.error(error);
-    }
-  );
-
-  // Add lights
+  // Add hemisphere light to scene
   let hemiLight = new HemisphereLight(0xffffff, 0xffffff, 0.2);
   hemiLight.position.set(0, 0, 0);
-  // Add hemisphere light to scene
   scene.add(hemiLight);
 
+  // Add directional Light to scene
   let d = 10.25;
   let dirLight = new DirectionalLight(0xffffff, 0.2);
   dirLight.position.set(-8, 12, 8);
@@ -159,38 +147,37 @@ function init() {
   dirLight.shadow.camera.right = d;
   dirLight.shadow.camera.top = d;
   dirLight.shadow.camera.bottom = d * -1;
-  // Add directional Light to scene
   scene.add(dirLight);
 
-  // Floor
-  let floorGeometry = new PlaneGeometry(5000, 5000, 1, 1);
-  let floorMaterial = new ShadowMaterial({
-    // color: 0x516f2a,
-    // shininess: 1,
+  // Shadow Catcher
+  let shadowGeometry = new PlaneGeometry(50, 50, 1, 1);
+  let shadowMaterial = new ShadowMaterial({
     opacity: 0.5,
   });
 
-  let floor = new Mesh(floorGeometry, floorMaterial);
-  floor.rotation.x = -0.5 * Math.PI;
-  floor.receiveShadow = true;
-  floor.position.y = -11;
-  scene.add(floor);
+  // Add the Shadow Catcher to scene
+  let shadowCatcher = new Mesh(shadowGeometry, shadowMaterial);
+  shadowCatcher.rotation.x = -0.5 * Math.PI;
+  shadowCatcher.receiveShadow = true;
+  shadowCatcher.position.y = -11;
+  scene.add(shadowCatcher);
 
-  let geometry = new PlaneGeometry(4, 13.6, 1, 1);
-  let material = new MeshBasicMaterial({
-    color: 0x516f2a,
+  // Add the Clickable Mesh to scene
+  let ClickGeometry = new PlaneGeometry(4, 13.6, 1, 1);
+  let ClickMaterial = new MeshBasicMaterial({
+    color: 0x000000,
     opacity: 0,
     transparent: true,
-  }); // 0xf2ce2e
-  let clickmesh = new Mesh(geometry, material);
+  });
+  let clickMesh = new Mesh(ClickGeometry, ClickMaterial);
+  clickMesh.position.z = 2;
+  clickMesh.position.y = -5.5;
+  clickMesh.position.x = 0;
+  clickMesh.name = 'clickmesh';
+  scene.add(clickMesh);
+} // end of the init function
 
-  clickmesh.position.z = 2;
-  clickmesh.position.y = -5.5;
-  clickmesh.position.x = 0;
-  clickmesh.name = 'yo';
-  scene.add(clickmesh);
-}
-
+// Render to animation loop
 function render() {
   if (mixer) {
     mixer.update(clock.getDelta());
@@ -245,7 +232,7 @@ function raycast(e, touch = false) {
 
   if (intersects[0]) {
     var object = intersects[0].object;
-    if (object.name === 'yo') {
+    if (object.name === 'clickmesh') {
       if (!currentlyAnimating) {
         currentlyAnimating = true;
         playOnClick();

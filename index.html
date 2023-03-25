@@ -2,8 +2,6 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-
-    <!-- Imporant meta information to make the page as rigid as possible on mobiles, to avoid unintentional zooming on the page itself  -->
     <meta
       name="viewport"
       content="width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
@@ -26,8 +24,7 @@
       html {
         margin: 0;
         padding: 0;
-        background-image:
-         /* url('city2.webp'), */ linear-gradient(
+        background-image: linear-gradient(
           to bottom,
           #1f1f1f,
           #202020,
@@ -40,15 +37,19 @@
         background-position: center bottom;
         background-repeat: no-repeat;
         background-size: cover;
+        overflow: hidden;
       }
+
       * {
         touch-action: manipulation;
       }
+
       *,
       *:before,
       *:after {
         box-sizing: border-box;
       }
+
       body {
         position: relative;
         color: white;
@@ -61,7 +62,7 @@
 
       .floor {
         position: absolute;
-        background-image: url('city2.webp');
+        background-image: url('floor.webp');
         width: 100vw;
         left: 0;
         bottom: 0;
@@ -99,6 +100,7 @@
         justify-content: center;
         align-items: center;
       }
+
       #c {
         position: absolute;
         top: 0;
@@ -107,11 +109,20 @@
         display: block;
       }
 
+      .clicker {
+        position: absolute;
+        bottom: 50px;
+        width: 230px;
+        height: 73%;
+        background-color: #1f1f1f00;
+        cursor: pointer;
+        z-index: 1;
+      }
+
       .name {
         font-size: 21.7vw;
         text-align: center;
         line-height: 75%;
-        /* text-shadow: 0px 4px 5px rgba(0, 0, 0, 0.4); */
         width: 100%;
         background: linear-gradient(
           289deg,
@@ -124,6 +135,7 @@
         background-size: 300% 300%;
         animation: gradient-animation 20s ease infinite;
         -webkit-background-clip: text;
+        background-clip: text;
         -webkit-text-fill-color: transparent;
       }
 
@@ -131,7 +143,6 @@
         font-size: 17.8vw;
         text-align: center;
         line-height: 75%;
-        /* text-shadow: 0px 4px 5px rgba(0, 0, 0, 0.4); */
         width: 100%;
         background: linear-gradient(
           289deg,
@@ -144,16 +155,37 @@
         background-size: 300% 300%;
         animation: gradient-animation 20s ease infinite;
         -webkit-background-clip: text;
+        background-clip: text;
         -webkit-text-fill-color: transparent;
+      }
+
+      @media only screen and (max-width: 768px) {
+        /* For mobile phones: */
+        .name {
+          font-size: 29vw;
+          padding-right: 5px;
+          padding-top: 5px;
+        }
+
+        .name2 {
+          font-size: 23.8vw;
+          padding-right: 5px;
+        }
+
+        .clicker {
+          display: none;
+        }
       }
 
       @keyframes gradient-animation {
         0% {
           background-position: 0% 50%;
         }
+
         50% {
           background-position: 100% 50%;
         }
+
         100% {
           background-position: 0% 50%;
         }
@@ -193,7 +225,6 @@
         width: 20px;
         height: 36px;
         opacity: 0;
-        font-family: 'Poppins', sans-serif;
         animation: move 2s linear infinite;
         -o-animation: move 2s linear infinite;
         -moz-animation: move 2s linear infinite;
@@ -211,30 +242,35 @@
         -moz-animation-delay: 0.2s;
         -webkit-animation-delay: 0.2s;
       }
+
       #load div:nth-child(3) {
         animation-delay: 0.4s;
         -o-animation-delay: 0.4s;
         -webkit-animation-delay: 0.4s;
         -webkit-animation-delay: 0.4s;
       }
+
       #load div:nth-child(4) {
         animation-delay: 0.6s;
         -o-animation-delay: 0.6s;
         -moz-animation-delay: 0.6s;
         -webkit-animation-delay: 0.6s;
       }
+
       #load div:nth-child(5) {
         animation-delay: 0.8s;
         -o-animation-delay: 0.8s;
         -moz-animation-delay: 0.8s;
         -webkit-animation-delay: 0.8s;
       }
+
       #load div:nth-child(6) {
         animation-delay: 1s;
         -o-animation-delay: 1s;
         -moz-animation-delay: 1s;
         -webkit-animation-delay: 1s;
       }
+
       #load div:nth-child(7) {
         animation-delay: 1.2s;
         -o-animation-delay: 1.2s;
@@ -247,6 +283,7 @@
           left: 0;
           opacity: 0;
         }
+
         35% {
           left: 41%;
           -moz-transform: rotate(0deg);
@@ -255,6 +292,7 @@
           transform: rotate(0deg);
           opacity: 1;
         }
+
         65% {
           left: 59%;
           -moz-transform: rotate(0deg);
@@ -263,6 +301,7 @@
           transform: rotate(0deg);
           opacity: 1;
         }
+
         100% {
           left: 100%;
           -moz-transform: rotate(-180deg);
@@ -278,18 +317,21 @@
           left: 0;
           opacity: 0;
         }
+
         35% {
           left: 41%;
           -moz-transform: rotate(0deg);
           transform: rotate(0deg);
           opacity: 1;
         }
+
         65% {
           left: 59%;
           -moz-transform: rotate(0deg);
           transform: rotate(0deg);
           opacity: 1;
         }
+
         100% {
           left: 100%;
           -moz-transform: rotate(-180deg);
@@ -303,18 +345,21 @@
           left: 0;
           opacity: 0;
         }
+
         35% {
           left: 41%;
           -webkit-transform: rotate(0deg);
           transform: rotate(0deg);
           opacity: 1;
         }
+
         65% {
           left: 59%;
           -webkit-transform: rotate(0deg);
           transform: rotate(0deg);
           opacity: 1;
         }
+
         100% {
           left: 100%;
           -webkit-transform: rotate(-180deg);
@@ -328,18 +373,21 @@
           left: 0;
           opacity: 0;
         }
+
         35% {
           left: 41%;
           -o-transform: rotate(0deg);
           transform: rotate(0deg);
           opacity: 1;
         }
+
         65% {
           left: 59%;
           -o-transform: rotate(0deg);
           transform: rotate(0deg);
           opacity: 1;
         }
+
         100% {
           left: 100%;
           -o-transform: rotate(-180deg);
@@ -350,7 +398,6 @@
     </style>
   </head>
   <body>
-    <!-- The loading element overlays all else until the model is loaded, at which point we remove this element from the DOM -->
     <div class="loading" id="js-loader">
       <div id="load">
         <div>G</div>
@@ -362,12 +409,11 @@
         <div>L</div>
       </div>
     </div>
-
     <div class="wrapper">
       <div class="name">FRANK</div>
       <div class="name2">DUFAUX</div>
       <div class="floor"></div>
-      <!-- The canvas element is used to draw the 3D scene -->
+      <div class="clicker"></div>
       <canvas id="c"></canvas>
     </div>
     <script type="module" src="main.js"></script>
