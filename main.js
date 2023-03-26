@@ -241,10 +241,10 @@ function raycast(e, touch = false) {
 function playOnClick() {
   let anim = Math.floor(Math.random() * possibleAnims.length) + 0;
   playModifierAnimation(idle, 0.25, possibleAnims[anim], 0.25);
-  let time = possibleAnims[anim]._clip.duration;
+  let time = possibleAnims[anim]._clip.duration - 0.5;
   document.querySelector(
     '.moveprogress .bar'
-  ).style.transitionDuration = time - 0.5 + 's';
+  ).style.transitionDuration = time + 's';
   document.querySelector('.moveprogress').className += ' complete';
   let textVar = 'HE IS MOVING';
   document.body.style.setProperty('--text', '"' + textVar + '"');
