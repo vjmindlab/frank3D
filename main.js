@@ -75,16 +75,13 @@ function init() {
     0.1,
     50
   );
-  camera.position.z = 20;
-  camera.position.x = 0;
-  camera.position.y = -3.5;
+  camera.position.z = 3;
 
   var loader = new GLTFLoader();
   loader.setMeshoptDecoder(MeshoptDecoder);
   loader.load(MODEL_PATH, function (gltf) {
     model = gltf.scene;
     let fileAnimations = gltf.animations;
-
     model.traverse((o) => {
       if (o.isMesh) {
         o.frustumCulled = false; // Fix the disapearing mesh due to Meshopt compression
@@ -101,9 +98,10 @@ function init() {
       }
     });
 
-    model.scale.set(7, 7, 7);
-    model.position.y = -11;
+    model.scale.set(1, 1, 1);
+    model.position.y = -1;
 
+    // model.getObjectByName('Text').remove;
     scene.add(model);
 
     loaderAnim.remove();
@@ -132,17 +130,16 @@ function init() {
 
   // Add hemisphere light to scene
   let hemiLight = new HemisphereLight(0xffffff, 0xffffff, 0.2);
-  hemiLight.position.set(0, 0, 0);
   scene.add(hemiLight);
 
   // Add directional Light to scene
-  let d = 10.25;
+  let d = 2;
   let dirLight = new DirectionalLight(0xffffff, 0.2);
   dirLight.position.set(-8, 12, 8);
   dirLight.castShadow = true;
   dirLight.shadow.mapSize = new Vector2(1024, 1024);
-  dirLight.shadow.camera.near = 0.1;
-  dirLight.shadow.camera.far = 1500;
+  dirLight.shadow.camera.near = 1;
+  dirLight.shadow.camera.far = 150;
   dirLight.shadow.camera.left = d * -1;
   dirLight.shadow.camera.right = d;
   dirLight.shadow.camera.top = d;
@@ -150,20 +147,20 @@ function init() {
   scene.add(dirLight);
 
   // Shadow Catcher
-  let shadowGeometry = new PlaneGeometry(50, 50, 1, 1);
+  let shadowGeometry = new PlaneGeometry(5, 5, 1, 1);
   let shadowMaterial = new ShadowMaterial({
-    opacity: 0.5,
+    opacity: 0.3,
   });
 
   // Add the Shadow Catcher to scene
   let shadowCatcher = new Mesh(shadowGeometry, shadowMaterial);
   shadowCatcher.rotation.x = -0.5 * Math.PI;
   shadowCatcher.receiveShadow = true;
-  shadowCatcher.position.y = -11;
+  shadowCatcher.position.y = -1;
   scene.add(shadowCatcher);
 
   // Add the Clickable Mesh to scene
-  let ClickGeometry = new PlaneGeometry(4, 13.6, 1, 1);
+  let ClickGeometry = new PlaneGeometry(0.23, 0.665, 1, 1);
   let ClickMaterial = new MeshBasicMaterial({
     color: 0x000000,
     opacity: 0,
@@ -171,8 +168,7 @@ function init() {
   });
   let clickMesh = new Mesh(ClickGeometry, ClickMaterial);
   clickMesh.position.z = 2;
-  clickMesh.position.y = -5.5;
-  clickMesh.position.x = 0;
+  clickMesh.position.y = -0.05;
   clickMesh.name = 'clickmesh';
   scene.add(clickMesh);
 } // end of the init function
@@ -241,10 +237,33 @@ function raycast(e, touch = false) {
   }
 }
 
-// Get a random animation, and play it
+// Get a random animation, play it, and drive the progress bar
 function playOnClick() {
   let anim = Math.floor(Math.random() * possibleAnims.length) + 0;
   playModifierAnimation(idle, 0.25, possibleAnims[anim], 0.25);
+  let time = possibleAnims[anim]._clip.duration;
+  document.querySelector(
+    '.moveprogress .bar'
+  ).style.transitionDuration = time - 0.5 + 's';
+  document.querySelector('.moveprogress').className += ' complete';
+  let textVar = 'HE IS MOVING';
+  document.body.style.setProperty('--text', '"' + textVar + '"');
+  setTimeout(() => {
+    document.querySelector(
+      '.moveprogress .bar'
+    ).style.transitionDuration = '0.1s';
+    document
+      .querySelector('.moveprogress')
+      .classList.remove('complete');
+
+    if (matchMedia('(pointer:fine)').matches) {
+      let textVar = 'CLICK HIM AGAIN';
+      document.body.style.setProperty('--text', '"' + textVar + '"');
+    } else {
+      let textVar = 'TOUCH HIM AGAIN';
+      document.body.style.setProperty('--text', '"' + textVar + '"');
+    }
+  }, time * 1000);
 }
 
 function playModifierAnimation(from, fSpeed, to, tSpeed) {
