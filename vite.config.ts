@@ -11,6 +11,7 @@ function renderChunks(deps: Record<string, string>) {
 }
 
 export default defineConfig({
+  base: './',
   build: {
     sourcemap: true,
     rollupOptions: {

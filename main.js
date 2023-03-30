@@ -246,7 +246,7 @@ function playOnClick() {
     '.moveprogress .bar'
   ).style.transitionDuration = time + 's';
   document.querySelector('.moveprogress').className += ' complete';
-  let textVar = 'HE IS MOVING';
+  let textVar = "HE'S MOVING WAIT";
   document.body.style.setProperty('--text', '"' + textVar + '"');
   setTimeout(() => {
     document.querySelector(
@@ -257,10 +257,10 @@ function playOnClick() {
       .classList.remove('complete');
 
     if (matchMedia('(pointer:fine)').matches) {
-      let textVar = 'CLICK HIM AGAIN';
+      let textVar = 'CLICK AGAIN';
       document.body.style.setProperty('--text', '"' + textVar + '"');
     } else {
-      let textVar = 'TOUCH HIM AGAIN';
+      let textVar = 'TOUCH AGAIN';
       document.body.style.setProperty('--text', '"' + textVar + '"');
     }
   }, time * 1000);
