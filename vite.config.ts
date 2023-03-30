@@ -13,6 +13,7 @@ function renderChunks(deps: Record<string, string>) {
 export default defineConfig({
   base: './',
   build: {
+    outDir: './docs',
     sourcemap: true,
     rollupOptions: {
       output: {
